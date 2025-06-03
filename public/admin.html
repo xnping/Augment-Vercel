@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ Augment 服务控制台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .status-card {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 5px solid;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .status-enabled {
+            background-color: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+        
+        .status-disabled {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+        
+        .status-loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+        
+        .control-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .control-section h3 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.3em;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-item strong {
+            color: #495057;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ 服务控制台</h1>
+            <p>Augment 清理工具远程控制中心</p>
+        </div>
+        
+        <div class="content">
+            <div id="status" class="status-card status-loading">
+                <strong>🔄 正在检查服务状态...</strong>
+            </div>
+            
+            <div class="info-grid" id="statusInfo" style="display: none;">
+                <div class="info-item">
+                    <strong>服务版本</strong>
+                    <span id="version">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>最后更新</strong>
+                    <span id="lastUpdate">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>服务器时间</strong>
+                    <span id="serverTime">-</span>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>🎮 控制操作</h3>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="showInstructions('enable')">
+                        🟢 启用服务
+                    </button>
+                    <button class="btn btn-danger" onclick="showInstructions('disable')">
+                        🔴 禁用服务
+                    </button>
+                    <button class="btn btn-info" onclick="checkStatus()">
+                        🔄 刷新状态
+                    </button>
+                </div>
+                <div id="instructions" style="display: none; margin-top: 15px; padding: 15px; background: #e9ecef; border-radius: 8px;">
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>📢 通知管理</h3>
+                <div class="form-group">
+                    <label for="notice">通知消息</label>
+                    <textarea id="notice" class="form-control" placeholder="输入要显示给用户的通知消息..."></textarea>
+                </div>
+                <button class="btn btn-info" onclick="showInstructions('notice')">
+                    📢 更新通知
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 提示：所有控制操作需要通过 Vercel 控制台的环境变量来实现</p>
+        </div>
+    </div>
+
+    <script>
+        let statusCheckInterval;
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                updateStatusDisplay(data);
+                updateStatusInfo(data);
+                
+                document.getElementById('notice').value = data.notice || '';
+            } catch (error) {
+                console.error('检查状态失败:', error);
+                showError('无法连接到服务器，请检查网络连接');
+            }
+        }
+        
+        function updateStatusDisplay(data) {
+            const statusDiv = document.getElementById('status');
+            const isEnabled = data.enabled;
+            
+            statusDiv.className = `status-card ${isEnabled ? 'status-enabled' : 'status-disabled'}`;
+            statusDiv.innerHTML = `
+                <strong>${isEnabled ? '🟢 服务已启用' : '🔴 服务已禁用'}</strong><br>
+                <div style="margin-top: 8px;">${data.message}</div>
+                ${data.notice ? `<div style="margin-top: 8px; font-style: italic;">📢 ${data.notice}</div>` : ''}
+            `;
+        }
+        
+        function updateStatusInfo(data) {
+            document.getElementById('statusInfo').style.display = 'grid';
+            document.getElementById('version').textContent = data.version || '1.0.0';
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN');
+            document.getElementById('serverTime').textContent = data.server_time ? 
+                new Date(data.server_time).toLocaleString('zh-CN') : '-';
+        }
+        
+        function showError(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status-card status-disabled';
+            statusDiv.innerHTML = `<strong>❌ 错误</strong><br><div style="margin-top: 8px;">${message}</div>`;
+        }
+        
+        function showInstructions(action) {
+            const instructionsDiv = document.getElementById('instructions');
+            let content = '';
+            
+            switch(action) {
+                case 'enable':
+                    content = `
+                        <h4>🟢 启用服务步骤：</h4>
+                        <ol>
+                            <li>登录 <a href="https://vercel.com" target="_blank">Vercel 控制台</a></li>
+                            <li>进入项目设置 → Environment Variables</li>
+                            <li>修改 <code>SERVICE_ENABLED</code> 为 <code>true</code></li>
+                            <li>点击保存，等待几秒钟生效</li>
+                        </ol>
+                    `;
+                    break;
+                case 'disable':
+                    content = `
+                        <h4>🔴 禁用服务步骤：</h4>
+                        <ol>
+                            <li>登录 <a href="https://vercel.com" target="_blank">Vercel 控制台</a></li>
+                            <li>进入项目设置 → Environment Variables</li>
+                            <li>修改 <code>SERVICE_ENABLED</code> 为 <code>false</code></li>
+                            <li>点击保存，立即生效</li>
+                        </ol>
+                    `;
+                    break;
+                case 'notice':
+                    const notice = document.getElementById('notice').value;
+                    content = `
+                        <h4>📢 更新通知步骤：</h4>
+                        <ol>
+                            <li>登录 <a href="https://vercel.com" target="_blank">Vercel 控制台</a></li>
+                            <li>进入项目设置 → Environment Variables</li>
+                            <li>修改 <code>SERVICE_NOTICE</code> 为：<br><code>${notice || '(清空通知)'}</code></li>
+                            <li>点击保存，等待几秒钟生效</li>
+                        </ol>
+                    `;
+                    break;
+            }
+            
+            instructionsDiv.innerHTML = content;
+            instructionsDiv.style.display = 'block';
+        }
+        
+        // 页面加载时检查状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStatus();
+            
+            // 每30秒自动刷新状态
+            statusCheckInterval = setInterval(checkStatus, 30000);
+        });
+        
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>
