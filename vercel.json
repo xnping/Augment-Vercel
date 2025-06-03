@@ -1,0 +1,28 @@
+{
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "SERVICE_ENABLED": "true",
+    "SERVICE_VERSION": "1.0.0",
+    "SERVICE_NOTICE": "",
+    "LOG_REQUESTS": "false",
+    "PASSWORD_SALT": "augment_salt_2024",
+    "USER1_PASSWORD_HASH": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+    "USER2_PASSWORD_HASH": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+    "ADMIN_PASSWORD_HASH": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "augment-switch-control",
+  "version": "1.0.0",
+  "description": "Augment 清理工具的远程控制服务",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "augment",
+    "control",
+    "vercel",
+    "serverless"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
