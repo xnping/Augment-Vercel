@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👥 账号管理 - Augment 控制台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .nav {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .nav a {
+            color: #495057;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav a:hover, .nav a.active {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .admin-key-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-info { background: #17a2b8; color: white; }
+        
+        .accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .accounts-table th,
+        .accounts-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .accounts-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .role-admin {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .role-user {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        @media (max-width: 768px) {
+            .accounts-table {
+                font-size: 12px;
+            }
+            
+            .accounts-table th,
+            .accounts-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 账号管理</h1>
+            <p>Augment 清理工具用户账号管理</p>
+        </div>
+        
+        <div class="nav">
+            <a href="/admin.html">🎛️ 服务控制</a>
+            <a href="/accounts.html" class="active">👥 账号管理</a>
+            <a href="/">🏠 首页</a>
+        </div>
+        
+        <div class="content">
+            <!-- 管理员密钥验证 -->
+            <div class="admin-key-section" id="adminKeySection">
+                <h3>🔐 管理员验证</h3>
+                <p>请输入管理员密钥以访问账号管理功能</p>
+                <div class="form-group">
+                    <label for="adminKey">管理员密钥:</label>
+                    <input type="password" id="adminKey" class="form-control" placeholder="请输入管理员密钥">
+                </div>
+                <button class="btn btn-primary" onclick="verifyAdminKey()">🔓 验证</button>
+                <div class="alert alert-info" style="margin-top: 15px;">
+                    <strong>💡 提示:</strong> 默认管理员密钥是 <code>admin_secret_key_2024</code><br>
+                    您可以在 Vercel 环境变量中设置 <code>ADMIN_KEY</code> 来自定义密钥
+                </div>
+            </div>
+            
+            <!-- 账号管理主界面 -->
+            <div id="accountsSection" style="display: none;">
+                <div class="alert alert-success" id="successAlert" style="display: none;"></div>
+                <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>📋 账号列表</h3>
+                    <button class="btn btn-success" onclick="showCreateModal()">➕ 创建账号</button>
+                </div>
+                
+                <div id="accountsTableContainer">
+                    <p>正在加载账号数据...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建/编辑账号模态框 -->
+    <div id="accountModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">创建新账号</h3>
+            <form id="accountForm">
+                <div class="form-group">
+                    <label for="modalUsername">用户名:</label>
+                    <input type="text" id="modalUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalPassword">密码:</label>
+                    <input type="text" id="modalPassword" class="form-control" placeholder="留空自动生成">
+                </div>
+                <div class="form-group">
+                    <label for="modalRole">角色:</label>
+                    <select id="modalRole" class="form-control">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalDescription">描述:</label>
+                    <input type="text" id="modalDescription" class="form-control" placeholder="可选">
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let adminKey = '';
+        let accounts = [];
+        
+        // 验证管理员密钥
+        async function verifyAdminKey() {
+            const key = document.getElementById('adminKey').value;
+            if (!key) {
+                showError('请输入管理员密钥');
+                return;
+            }
+            
+            adminKey = key;
+            
+            try {
+                const response = await fetch('/api/accounts', {
+                    headers: {
+                        'X-Admin-Key': adminKey
+                    }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('adminKeySection').style.display = 'none';
+                    document.getElementById('accountsSection').style.display = 'block';
+                    loadAccounts();
+                } else {
+                    showError('管理员密钥验证失败');
+                }
+            } catch (error) {
+                showError('验证失败: ' + error.message);
+            }
+        }
+        
+        // 加载账号列表
+        async function loadAccounts() {
+            try {
+                const response = await fetch('/api/accounts', {
+                    headers: {
+                        'X-Admin-Key': adminKey
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    accounts = data.accounts;
+                    renderAccountsTable();
+                } else {
+                    showError('加载账号列表失败');
+                }
+            } catch (error) {
+                showError('加载失败: ' + error.message);
+            }
+        }
+        
+        // 渲染账号表格
+        function renderAccountsTable() {
+            const container = document.getElementById('accountsTableContainer');
+            
+            if (accounts.length === 0) {
+                container.innerHTML = '<p>暂无账号数据</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>最后登录</th>
+                            <th>描述</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            accounts.forEach(account => {
+                html += `
+                    <tr>
+                        <td><strong>${account.username}</strong></td>
+                        <td><span class="role-badge role-${account.role}">${account.role === 'admin' ? '管理员' : '普通用户'}</span></td>
+                        <td><span class="status-badge status-${account.enabled ? 'enabled' : 'disabled'}">${account.enabled ? '启用' : '禁用'}</span></td>
+                        <td>${formatDate(account.createdAt)}</td>
+                        <td>${account.lastLogin ? formatDate(account.lastLogin) : '从未登录'}</td>
+                        <td>${account.description || '-'}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editAccount('${account.username}')">编辑</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAccount('${account.username}')">删除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        // 显示创建账号模态框
+        function showCreateModal() {
+            document.getElementById('modalTitle').textContent = '创建新账号';
+            document.getElementById('accountForm').reset();
+            document.getElementById('modalUsername').disabled = false;
+            document.getElementById('accountModal').style.display = 'block';
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('accountModal').style.display = 'none';
+        }
+        
+        // 格式化日期
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('zh-CN');
+        }
+        
+        // 显示成功消息
+        function showSuccess(message) {
+            const alert = document.getElementById('successAlert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 3000);
+        }
+        
+        // 显示错误消息
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+        
+        // 表单提交处理
+        document.getElementById('accountForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('modalUsername').value;
+            const password = document.getElementById('modalPassword').value;
+            const role = document.getElementById('modalRole').value;
+            const description = document.getElementById('modalDescription').value;
+            
+            try {
+                const response = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        role,
+                        description
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`账号创建成功！用户名: ${result.account.username}, 密码: ${result.account.password}`);
+                    closeModal();
+                    loadAccounts();
+                } else {
+                    showError(result.message || '创建失败');
+                }
+            } catch (error) {
+                showError('创建失败: ' + error.message);
+            }
+        });
+        
+        // 删除账号
+        async function deleteAccount(username) {
+            if (!confirm(`确定要删除账号 "${username}" 吗？此操作不可恢复！`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/accounts?username=${username}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Admin-Key': adminKey
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('账号删除成功');
+                    loadAccounts();
+                } else {
+                    showError(result.message || '删除失败');
+                }
+            } catch (error) {
+                showError('删除失败: ' + error.message);
+            }
+        }
+        
+        // 页面加载时检查是否有管理员密钥
+        document.addEventListener('DOMContentLoaded', function() {
+            // 可以在这里添加自动验证逻辑
+        });
+    </script>
+</body>
+</html>

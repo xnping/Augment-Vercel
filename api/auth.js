@@ -1,12 +1,37 @@
 // api/auth.js - 账号密码验证接口
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
-// 预设账号密码哈希值（从环境变量读取）
+// 数据文件路径
+const DATA_FILE = path.join(process.cwd(), 'data', 'accounts.json');
+
+// 读取账号数据
 function getValidAccounts() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      const accountsData = JSON.parse(data);
+
+      // 转换为旧格式以兼容现有代码
+      const accounts = {};
+      Object.values(accountsData.accounts).forEach(account => {
+        if (account.enabled) {
+          accounts[account.username] = account.passwordHash;
+        }
+      });
+
+      return accounts;
+    }
+  } catch (error) {
+    console.error('读取账号文件失败，使用环境变量:', error);
+  }
+
+  // 如果文件不存在或读取失败，回退到环境变量
   return {
-    'user1': process.env.USER1_PASSWORD_HASH || '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // hello
-    'user2': process.env.USER2_PASSWORD_HASH || 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', // secret
-    'admin': process.env.ADMIN_PASSWORD_HASH || '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'  // admin123
+    'user1': process.env.USER1_PASSWORD_HASH || '85786b7aece20433efcc965b6ec78fef9a1f5721d8004d865438b0d5854232a7', // hello
+    'user2': process.env.USER2_PASSWORD_HASH || '7fc3617b3d537a4030922cf9eafcc9d212798c9edd352e713042eb6c04fa002a', // password
+    'admin': process.env.ADMIN_PASSWORD_HASH || '228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755'  // admin123
   };
 }
 
@@ -42,6 +67,23 @@ function recordFailedAttempt(ip) {
   const attempts = rateLimitMap.get(ip) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
   attempts.count++;
   rateLimitMap.set(ip, attempts);
+}
+
+// 更新最后登录时间
+function updateLastLoginTime(username) {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      const accountsData = JSON.parse(data);
+
+      if (accountsData.accounts[username]) {
+        accountsData.accounts[username].lastLogin = new Date().toISOString();
+        fs.writeFileSync(DATA_FILE, JSON.stringify(accountsData, null, 2));
+      }
+    }
+  } catch (error) {
+    console.error('更新登录时间失败:', error);
+  }
 }
 
 export default function handler(req, res) {
@@ -101,7 +143,10 @@ export default function handler(req, res) {
   if (validAccounts[username] && validAccounts[username] === passwordHash) {
     // 验证成功
     console.log(`[${new Date().toISOString()}] Successful login: ${username} from ${clientIP}`);
-    
+
+    // 更新最后登录时间
+    updateLastLoginTime(username);
+
     res.status(200).json({
       success: true,
       message: '验证成功',
