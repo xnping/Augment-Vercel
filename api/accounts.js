@@ -1,62 +1,65 @@
 // api/accounts.js - 账号管理接口
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
-
-// 数据文件路径
-const DATA_FILE = path.join(process.cwd(), 'data', 'accounts.json');
 
 // 管理员密钥（用于验证管理员权限）
 const ADMIN_KEY = process.env.ADMIN_KEY || 'admin_secret_key_2024';
 
+// 内存中的账号数据存储（Vercel 环境下使用）
+let memoryAccountsData = null;
+
 // 读取账号数据
 function readAccountsData() {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      // 如果文件不存在，创建默认数据
-      const defaultData = {
-        accounts: {},
-        settings: {
-          passwordSalt: 'augment_salt_2024',
-          maxAccounts: 50,
-          defaultRole: 'user'
-        },
-        metadata: {
-          version: '1.0.0',
-          lastUpdated: new Date().toISOString(),
-          totalAccounts: 0
-        }
-      };
-      writeAccountsData(defaultData);
-      return defaultData;
-    }
-    
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('读取账号数据失败:', error);
-    throw new Error('数据读取失败');
+  // 在 Vercel 环境中使用内存存储
+  if (!memoryAccountsData) {
+    memoryAccountsData = getDefaultAccountsData();
   }
+  return JSON.parse(JSON.stringify(memoryAccountsData)); // 深拷贝
+}
+
+// 获取默认账号数据
+function getDefaultAccountsData() {
+  return {
+    accounts: {
+      admin: {
+        username: 'admin',
+        passwordHash: '228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755', // admin123
+        role: 'admin',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        lastLogin: null,
+        enabled: true,
+        description: '默认管理员账号'
+      },
+      user1: {
+        username: 'user1',
+        passwordHash: '85786b7aece20433efcc965b6ec78fef9a1f5721d8004d865438b0d5854232a7', // hello
+        role: 'user',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        lastLogin: null,
+        enabled: true,
+        description: '默认用户账号'
+      }
+    },
+    settings: {
+      passwordSalt: 'augment_salt_2024',
+      maxAccounts: 50,
+      defaultRole: 'user'
+    },
+    metadata: {
+      version: '1.0.0',
+      lastUpdated: new Date().toISOString(),
+      totalAccounts: 2
+    }
+  };
 }
 
 // 写入账号数据
 function writeAccountsData(data) {
-  try {
-    // 确保目录存在
-    const dir = path.dirname(DATA_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    // 更新元数据
-    data.metadata.lastUpdated = new Date().toISOString();
-    data.metadata.totalAccounts = Object.keys(data.accounts).length;
-    
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('写入账号数据失败:', error);
-    throw new Error('数据写入失败');
-  }
+  // 更新元数据
+  data.metadata.lastUpdated = new Date().toISOString();
+  data.metadata.totalAccounts = Object.keys(data.accounts).length;
+
+  // 在 Vercel 环境中更新内存存储
+  memoryAccountsData = JSON.parse(JSON.stringify(data)); // 深拷贝
 }
 
 // 生成密码哈希

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 API 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Augment API 测试页面</h1>
+        
+        <div class="test-section">
+            <h3>🔐 管理员密钥设置</h3>
+            <input type="password" id="adminKey" placeholder="输入管理员密钥" value="19813889852wkn">
+            <button class="btn" onclick="setAdminKey()">设置密钥</button>
+            <div id="keyResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 测试服务状态</h3>
+            <button class="btn" onclick="testStatus()">检查状态</button>
+            <div id="statusResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>👥 测试账号管理</h3>
+            <button class="btn" onclick="testGetAccounts()">获取账号列表</button>
+            <button class="btn" onclick="testCreateAccount()">创建测试账号</button>
+            <div id="accountsResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔑 测试身份验证</h3>
+            <input type="text" id="testUsername" placeholder="用户名" value="admin">
+            <input type="password" id="testPassword" placeholder="密码" value="admin123">
+            <button class="btn" onclick="testAuth()">测试登录</button>
+            <div id="authResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let adminKey = '';
+        
+        function setAdminKey() {
+            adminKey = document.getElementById('adminKey').value;
+            const result = document.getElementById('keyResult');
+            result.textContent = `管理员密钥已设置: ${adminKey.substring(0, 3)}***`;
+            result.style.display = 'block';
+        }
+        
+        async function testStatus() {
+            const result = document.getElementById('statusResult');
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                result.style.display = 'block';
+            } catch (error) {
+                result.textContent = `错误: ${error.message}`;
+                result.style.display = 'block';
+            }
+        }
+        
+        async function testGetAccounts() {
+            const result = document.getElementById('accountsResult');
+            if (!adminKey) {
+                result.textContent = '请先设置管理员密钥';
+                result.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/accounts', {
+                    headers: {
+                        'X-Admin-Key': adminKey
+                    }
+                });
+                const data = await response.json();
+                result.textContent = `状态: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                result.style.display = 'block';
+            } catch (error) {
+                result.textContent = `错误: ${error.message}`;
+                result.style.display = 'block';
+            }
+        }
+        
+        async function testCreateAccount() {
+            const result = document.getElementById('accountsResult');
+            if (!adminKey) {
+                result.textContent = '请先设置管理员密钥';
+                result.style.display = 'block';
+                return;
+            }
+            
+            const testAccount = {
+                username: 'test' + Date.now(),
+                password: 'test123',
+                role: 'user',
+                description: '测试账号'
+            };
+            
+            try {
+                const response = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey
+                    },
+                    body: JSON.stringify(testAccount)
+                });
+                const data = await response.json();
+                result.textContent = `创建账号状态: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                result.style.display = 'block';
+            } catch (error) {
+                result.textContent = `错误: ${error.message}`;
+                result.style.display = 'block';
+            }
+        }
+        
+        async function testAuth() {
+            const result = document.getElementById('authResult');
+            const username = document.getElementById('testUsername').value;
+            const password = document.getElementById('testPassword').value;
+            
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                const data = await response.json();
+                result.textContent = `登录状态: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                result.style.display = 'block';
+            } catch (error) {
+                result.textContent = `错误: ${error.message}`;
+                result.style.display = 'block';
+            }
+        }
+        
+        // 页面加载时自动设置管理员密钥
+        document.addEventListener('DOMContentLoaded', function() {
+            setAdminKey();
+        });
+    </script>
+</body>
+</html>
