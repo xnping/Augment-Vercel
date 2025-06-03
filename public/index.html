@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Augment 清理工具 - 远程控制服务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.2em;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+        }
+        
+        .status-card h3 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .status-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .api-info {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .api-info h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .api-endpoint {
+            background: #343a40;
+            color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Augment 清理工具</h1>
+            <p>远程控制服务已启动</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-card">
+                <h3>✅ 服务运行正常</h3>
+                <p>Vercel Functions 部署成功，API 接口已就绪</p>
+            </div>
+            
+            <div class="api-info">
+                <h4>📡 API 接口地址：</h4>
+                <div class="api-endpoint" id="statusEndpoint">
+                    GET /api/status - 检查服务状态
+                </div>
+                <div class="api-endpoint" id="authEndpoint">
+                    POST /api/auth - 用户身份验证
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <a href="/admin.html" class="btn btn-primary">
+                    🎛️ 管理控制台
+                </a>
+                <a href="/api/status" class="btn btn-success" target="_blank">
+                    📊 检查状态
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 这是 Augment 清理工具的远程控制服务</p>
+            <p>客户端程序通过此服务进行身份验证和状态检查</p>
+        </div>
+    </div>
+
+    <script>
+        // 动态显示当前域名的 API 地址
+        const baseUrl = window.location.origin;
+        document.getElementById('statusEndpoint').textContent = `GET ${baseUrl}/api/status`;
+        document.getElementById('authEndpoint').textContent = `POST ${baseUrl}/api/auth`;
+        
+        // 简单的状态检查
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.enabled) {
+                    console.log('✅ 服务状态正常');
+                } else {
+                    console.log('⚠️ 服务已禁用');
+                }
+            })
+            .catch(error => {
+                console.error('❌ 状态检查失败:', error);
+            });
+    </script>
+</body>
+</html>
