@@ -1,8 +1,8 @@
 {
   "name": "augment-switch-control",
-  "version": "1.0.0",
-  "description": "Augment 清理工具的远程控制服务",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "Augment 清理工具的身份验证和临时邮箱服务",
+  "main": "api/auth/verify.js",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step required'",
@@ -12,10 +12,15 @@
     "augment",
     "control",
     "vercel",
-    "serverless"
+    "serverless",
+    "email",
+    "authentication"
   ],
-  "author": "Your Name",
+  "author": "xnping",
   "license": "MIT",
+  "dependencies": {
+    "@upstash/redis": "^1.25.0"
+  },
   "devDependencies": {
     "vercel": "^32.0.0"
   }

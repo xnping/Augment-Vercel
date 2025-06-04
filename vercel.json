@@ -6,14 +6,17 @@
   },
   "env": {
     "SERVICE_ENABLED": "true",
-    "SERVICE_VERSION": "1.0.0",
+    "SERVICE_VERSION": "1.1.0",
     "SERVICE_NOTICE": "",
     "LOG_REQUESTS": "false",
     "PASSWORD_SALT": "augment_salt_2024",
     "ADMIN_KEY": "admin_secret_key_2024",
     "USER1_PASSWORD_HASH": "85786b7aece20433efcc965b6ec78fef9a1f5721d8004d865438b0d5854232a7",
     "USER2_PASSWORD_HASH": "7fc3617b3d537a4030922cf9eafcc9d212798c9edd352e713042eb6c04fa002a",
-    "ADMIN_PASSWORD_HASH": "228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755"
+    "ADMIN_PASSWORD_HASH": "228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755",
+    "UPSTASH_REDIS_REST_URL": "https://more-mouse-28188.upstash.io",
+    "UPSTASH_REDIS_REST_TOKEN": "AW4cAAIjcDFlYjMxYWU0MDJjNTk0M2M4YjY2ZTMyNTBiMThlMGU4MnAxMA",
+    "WEBHOOK_SECRET": "@webhook_secret"
   },
   "headers": [
     {
@@ -22,6 +25,18 @@
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
         }
       ]
     }
