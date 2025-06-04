@@ -2,7 +2,7 @@
   "name": "augment-switch-control",
   "version": "1.1.0",
   "description": "Augment 清理工具的身份验证和临时邮箱服务",
-  "main": "api/auth/verify.js",
+  "main": "api/auth.js",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step required'",

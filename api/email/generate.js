@@ -4,7 +4,7 @@
  */
 
 import { Redis } from '@upstash/redis';
-import { verifyCredentials } from '../auth/verify.js';
+import { verifyCredentials } from '../auth.js';
 
 const redis = Redis.fromEnv();
 

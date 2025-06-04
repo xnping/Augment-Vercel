@@ -86,6 +86,40 @@ function updateLastLoginTime(username) {
   }
 }
 
+// 导出验证函数供其他模块使用
+export async function verifyCredentials(username, password) {
+  try {
+    // 验证输入
+    if (!username || !password) {
+      return { success: false, error: 'Username and password required' };
+    }
+
+    // 验证用户名格式
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      return { success: false, error: 'Invalid username format' };
+    }
+
+    const validAccounts = getValidAccounts();
+    const passwordHash = hashPassword(password);
+
+    if (validAccounts[username] && validAccounts[username] === passwordHash) {
+      // 更新最后登录时间
+      updateLastLoginTime(username);
+
+      return {
+        success: true,
+        username: username,
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+    } else {
+      return { success: false, error: 'Invalid credentials' };
+    }
+  } catch (error) {
+    console.error('Verify credentials error:', error);
+    return { success: false, error: 'Internal server error' };
+  }
+}
+
 export default function handler(req, res) {
   // 设置 CORS 头
   res.setHeader('Access-Control-Allow-Origin', '*');
