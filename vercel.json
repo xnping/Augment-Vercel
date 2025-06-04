@@ -6,7 +6,7 @@
   },
   "env": {
     "SERVICE_ENABLED": "true",
-    "SERVICE_VERSION": "1.1.0",
+    "SERVICE_VERSION": "1.1.1",
     "SERVICE_NOTICE": "",
     "LOG_REQUESTS": "false",
     "PASSWORD_SALT": "augment_salt_2024",
