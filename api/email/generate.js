@@ -12,7 +12,7 @@ const redis = Redis.fromEnv();
 function generateEmailAddress() {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
-  return `temp-${timestamp}-${random}@email.184772.xyz`;
+  return `temp-${timestamp}-${random}@184772.xyz`;
 }
 
 // CORS 头部
