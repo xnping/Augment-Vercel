@@ -107,8 +107,24 @@ export default async function handler(req, res) {
 
     // 记录用户的邮箱列表
     const userEmailsKey = `user:${username}:emails`;
-    const userEmails = await redis.get(userEmailsKey) || [];
-    const emailList = Array.isArray(userEmails) ? userEmails : (userEmails ? JSON.parse(userEmails) : []);
+    const userEmailsData = await redis.get(userEmailsKey);
+
+    let emailList = [];
+    if (userEmailsData) {
+      try {
+        if (typeof userEmailsData === 'string') {
+          emailList = JSON.parse(userEmailsData);
+        } else if (Array.isArray(userEmailsData)) {
+          emailList = userEmailsData;
+        } else if (typeof userEmailsData === 'object') {
+          emailList = Object.values(userEmailsData);
+        }
+      } catch (parseError) {
+        console.error('User emails parse error:', parseError, 'Data:', userEmailsData);
+        emailList = [];
+      }
+    }
+
     emailList.push(emailAddress);
     await redis.set(userEmailsKey, JSON.stringify(emailList), { ex: 24 * 60 * 60 });
 

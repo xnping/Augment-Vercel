@@ -8,37 +8,25 @@ const DATA_FILE = path.join(process.cwd(), 'data', 'accounts.json');
 
 // 读取账号数据并直接比较
 function isValidCredentials(username, password) {
-  console.log(`[DEBUG] 验证凭据: username=${username}, password=${password}`);
-  console.log(`[DEBUG] 数据文件路径: ${DATA_FILE}`);
-  console.log(`[DEBUG] 文件是否存在: ${fs.existsSync(DATA_FILE)}`);
-
   try {
     // 先尝试从文件读取
     if (fs.existsSync(DATA_FILE)) {
       const data = fs.readFileSync(DATA_FILE, 'utf8');
       const accountsData = JSON.parse(data);
-      console.log(`[DEBUG] 从文件读取到账号数据:`, accountsData);
 
       // 遍历账号数据，直接比较用户名和密码
       for (const account of Object.values(accountsData.accounts)) {
-        console.log(`[DEBUG] 检查账号:`, account);
         if (account.enabled && account.username === username && account.password === password) {
-          console.log(`[DEBUG] 文件验证成功`);
           return true;
         }
       }
-      console.log(`[DEBUG] 文件中未找到匹配账号`);
-    } else {
-      console.log(`[DEBUG] 文件不存在，使用默认验证`);
     }
   } catch (error) {
-    console.error('[DEBUG] 读取账号文件失败:', error);
+    console.error('读取账号文件失败:', error);
   }
 
   // 如果文件读取失败，使用默认账号
-  const defaultResult = username === 'admin' && password === 'admin123';
-  console.log(`[DEBUG] 默认验证结果: ${defaultResult}`);
-  return defaultResult;
+  return username === 'admin' && password === 'admin123';
 }
 
 // 简单的速率限制（内存存储，重启后重置）

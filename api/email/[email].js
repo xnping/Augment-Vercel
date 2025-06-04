@@ -93,7 +93,23 @@ export default async function handler(req, res) {
       });
     }
 
-    const emailData = JSON.parse(emailDataStr);
+    let emailData;
+    try {
+      // 处理 Redis 返回的数据
+      if (typeof emailDataStr === 'string') {
+        emailData = JSON.parse(emailDataStr);
+      } else if (typeof emailDataStr === 'object') {
+        emailData = emailDataStr; // 已经是对象了
+      } else {
+        throw new Error('Invalid email data format');
+      }
+    } catch (parseError) {
+      console.error('Email data parse error:', parseError, 'Data:', emailDataStr);
+      return res.status(500).json({
+        success: false,
+        error: 'Invalid email data format'
+      });
+    }
 
     if (emailData.username !== username) {
       return res.status(403).json({
@@ -150,8 +166,21 @@ async function getEmailMessages(emailAddress) {
     for (const key of keys) {
       const messageDataStr = await redis.get(key);
       if (messageDataStr) {
-        const messageData = JSON.parse(messageDataStr);
-        messages.push(messageData);
+        try {
+          let messageData;
+          if (typeof messageDataStr === 'string') {
+            messageData = JSON.parse(messageDataStr);
+          } else if (typeof messageDataStr === 'object') {
+            messageData = messageDataStr; // 已经是对象了
+          } else {
+            console.error('Invalid message data format:', messageDataStr);
+            continue;
+          }
+          messages.push(messageData);
+        } catch (parseError) {
+          console.error('Message data parse error:', parseError, 'Data:', messageDataStr);
+          continue; // 跳过这条消息
+        }
       }
     }
 
@@ -182,7 +211,23 @@ async function deleteEmailAddress(emailAddress, username) {
     // 从用户邮箱列表中移除
     const userEmailsKey = `user:${username}:emails`;
     const userEmailsStr = await redis.get(userEmailsKey);
-    const userEmails = userEmailsStr ? JSON.parse(userEmailsStr) : [];
+
+    let userEmails = [];
+    if (userEmailsStr) {
+      try {
+        if (typeof userEmailsStr === 'string') {
+          userEmails = JSON.parse(userEmailsStr);
+        } else if (Array.isArray(userEmailsStr)) {
+          userEmails = userEmailsStr;
+        } else if (typeof userEmailsStr === 'object') {
+          userEmails = Object.values(userEmailsStr);
+        }
+      } catch (parseError) {
+        console.error('User emails parse error:', parseError, 'Data:', userEmailsStr);
+        userEmails = [];
+      }
+    }
+
     const updatedEmails = userEmails.filter(email => email !== emailAddress);
 
     if (updatedEmails.length > 0) {
