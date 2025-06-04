@@ -2,21 +2,12 @@
   "accounts": {
     "admin": {
       "username": "admin",
-      "passwordHash": "228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755",
+      "password": "admin123",
       "role": "admin",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "lastLogin": null,
       "enabled": true,
       "description": "默认管理员账号"
-    },
-    "user1": {
-      "username": "user1",
-      "passwordHash": "85786b7aece20433efcc965b6ec78fef9a1f5721d8004d865438b0d5854232a7",
-      "role": "user",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": null,
-      "enabled": true,
-      "description": "默认用户账号"
     }
   },
   "settings": {

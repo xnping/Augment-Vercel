@@ -1,43 +1,32 @@
 // api/auth.js - 账号密码验证接口
-import crypto from 'crypto';
+// 简化版本 - 从JSON数据读取账号密码
 import fs from 'fs';
 import path from 'path';
 
 // 数据文件路径
 const DATA_FILE = path.join(process.cwd(), 'data', 'accounts.json');
 
-// 读取账号数据
-function getValidAccounts() {
+// 读取账号数据并直接比较
+function isValidCredentials(username, password) {
   try {
+    // 先尝试从文件读取
     if (fs.existsSync(DATA_FILE)) {
       const data = fs.readFileSync(DATA_FILE, 'utf8');
       const accountsData = JSON.parse(data);
 
-      // 转换为旧格式以兼容现有代码
-      const accounts = {};
-      Object.values(accountsData.accounts).forEach(account => {
-        if (account.enabled) {
-          accounts[account.username] = account.passwordHash;
+      // 遍历账号数据，直接比较用户名和密码
+      for (const account of Object.values(accountsData.accounts)) {
+        if (account.enabled && account.username === username && account.password === password) {
+          return true;
         }
-      });
-
-      return accounts;
+      }
     }
   } catch (error) {
-    console.error('读取账号文件失败，使用环境变量:', error);
+    console.error('读取账号文件失败:', error);
   }
 
-  // 如果文件不存在或读取失败，回退到环境变量
-  return {
-    'user1': process.env.USER1_PASSWORD_HASH || '85786b7aece20433efcc965b6ec78fef9a1f5721d8004d865438b0d5854232a7', // hello
-    'user2': process.env.USER2_PASSWORD_HASH || '7fc3617b3d537a4030922cf9eafcc9d212798c9edd352e713042eb6c04fa002a', // password
-    'admin': process.env.ADMIN_PASSWORD_HASH || '228d40e2fd54baf63d2a88260d0a903d031f274485439c397c43f6db1e1b1755'  // admin123
-  };
-}
-
-function hashPassword(password) {
-  const salt = process.env.PASSWORD_SALT || 'augment_salt_2024';
-  return crypto.createHash('sha256').update(password + salt).digest('hex');
+  // 如果文件读取失败，使用默认账号
+  return username === 'admin' && password === 'admin123';
 }
 
 // 简单的速率限制（内存存储，重启后重置）
@@ -87,36 +76,19 @@ function updateLastLoginTime(username) {
 }
 
 // 导出验证函数供其他模块使用
-export async function verifyCredentials(username, password) {
-  try {
-    // 验证输入
-    if (!username || !password) {
-      return { success: false, error: 'Username and password required' };
-    }
-
-    // 验证用户名格式
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-      return { success: false, error: 'Invalid username format' };
-    }
-
-    const validAccounts = getValidAccounts();
-    const passwordHash = hashPassword(password);
-
-    if (validAccounts[username] && validAccounts[username] === passwordHash) {
-      // 更新最后登录时间
-      updateLastLoginTime(username);
-
-      return {
-        success: true,
-        username: username,
-        timestamp: Math.floor(Date.now() / 1000)
-      };
-    } else {
-      return { success: false, error: 'Invalid credentials' };
-    }
-  } catch (error) {
-    console.error('Verify credentials error:', error);
-    return { success: false, error: 'Internal server error' };
+export function verifyCredentials(username, password) {
+  // 简化验证，直接返回结果
+  if (isValidCredentials(username, password)) {
+    return {
+      success: true,
+      username: username,
+      timestamp: Math.floor(Date.now() / 1000)
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Invalid credentials'
+    };
   }
 }
 
@@ -171,10 +143,7 @@ export default function handler(req, res) {
     });
   }
 
-  const validAccounts = getValidAccounts();
-  const passwordHash = hashPassword(password);
-  
-  if (validAccounts[username] && validAccounts[username] === passwordHash) {
+  if (isValidCredentials(username, password)) {
     // 验证成功
     console.log(`[${new Date().toISOString()}] Successful login: ${username} from ${clientIP}`);
 

@@ -1,5 +1,4 @@
 // api/accounts.js - 账号管理接口
-import crypto from 'crypto';
 
 // 管理员密钥（用于验证管理员权限）
 const ADMIN_KEY = process.env.ADMIN_KEY || 'admin_secret_key_2024';
@@ -60,11 +59,6 @@ function writeAccountsData(data) {
 
   // 在 Vercel 环境中更新内存存储
   memoryAccountsData = JSON.parse(JSON.stringify(data)); // 深拷贝
-}
-
-// 生成密码哈希
-function hashPassword(password, salt) {
-  return crypto.createHash('sha256').update(password + salt).digest('hex');
 }
 
 // 生成随机密码
@@ -177,12 +171,11 @@ function handleCreateAccount(req, res, data) {
 
   // 生成密码（如果未提供）
   const finalPassword = password || generateRandomPassword();
-  const passwordHash = hashPassword(finalPassword, data.settings.passwordSalt);
 
   // 创建账号
   const newAccount = {
     username: username,
-    passwordHash: passwordHash,
+    password: finalPassword, // 直接存储明文密码
     role: role,
     createdAt: new Date().toISOString(),
     lastLogin: null,
@@ -221,7 +214,7 @@ function handleUpdateAccount(req, res, data) {
 
   // 更新字段
   if (password) {
-    account.passwordHash = hashPassword(password, data.settings.passwordSalt);
+    account.password = password; // 直接存储明文密码
   }
   if (role !== undefined) account.role = role;
   if (enabled !== undefined) account.enabled = enabled;
